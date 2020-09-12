@@ -10,12 +10,24 @@ import (
 func main() {
 	sortType, arr, err := task1.ParseLineArguments(os.Args)
 	if err != nil {
-		os.Exit(-1)
+		panic("Incorrect args")
 	}
 
-	fmt.Println(sort.BubbleSort(arr[:], func (a int, b int) bool {
+	var res *[]int
+	comparator := func (a int, b int) bool {
 		return a > b
-	}))
+	}
+	switch sortType {
+		case "bubble":
+			res = sort.BubbleSort(arr[:], comparator)
+			break
+	}
+
+	if res == nil {
+		panic("Couldn't get result")
+	}
+
+	fmt.Println(*res)
 	fmt.Println(sortType)
 	fmt.Println(arr)
 

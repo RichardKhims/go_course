@@ -1,6 +1,6 @@
 package sort
 
-func BubbleSort(arr []int, compare func(int,int) bool) []int {
+func BubbleSort(arr []int, compare func(int,int) bool) *[]int {
 	x := make([]int, len(arr))
 	copy(x[:], arr)
 
@@ -14,5 +14,5 @@ func BubbleSort(arr []int, compare func(int,int) bool) []int {
 		}
 	}
 	
-	return x
+	return &x
 }
