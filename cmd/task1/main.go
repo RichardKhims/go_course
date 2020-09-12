@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	sortType, arr, err := task1.ParseLineArguments(os.Args)
+	sortType, arr, err := task1.ParseLineArguments(os.Args[:])
 	if err != nil {
 		panic("incorrect args")
 	}
