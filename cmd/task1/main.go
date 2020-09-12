@@ -21,6 +21,9 @@ func main() {
 		case "bubble":
 			res = sort.BubbleSort(arr[:], comparator)
 			break
+		case "shaker":
+			res = sort.ShakerSort(arr[:], comparator)
+			break
 	}
 
 	if res == nil {
