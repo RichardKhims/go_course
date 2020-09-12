@@ -24,6 +24,9 @@ func main() {
 		case "shaker":
 			res = sort.ShakerSort(arr[:], comparator)
 			break
+		case "selection":
+			res = sort.SelectionSort(arr[:], comparator)
+			break
 	}
 
 	if res == nil {
