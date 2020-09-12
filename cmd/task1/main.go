@@ -13,10 +13,7 @@ func main() {
 		panic("incorrect args")
 	}
 
-	comparator := func (a int, b int) bool {
-		return a > b
-	}
-	res, err := sort.Sort(sortType, arr, comparator)
+	res, err := sort.Sort(sortType, arr, task1.ComparatorMoreThen)
 
 	if err != nil {
 		panic(err.Error())
