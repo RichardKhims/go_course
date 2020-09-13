@@ -1,3 +1,3 @@
-module "github.com/RichardKhims/go_course"
+module github.com/RichardKhims/go_course
 
-go 1.15.2
+go 1.15
