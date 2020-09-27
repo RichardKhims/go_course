@@ -9,9 +9,11 @@ import (
 )
 
 type Database interface {
+	GetAllCourses(ctx context.Context) (result []Course, err error)
 	GetCourse(ctx context.Context, currency1 string, currency2 string) (result []Course, err error)
 	CreateCourse(ctx context.Context, c Course) error
 	DeleteCourse(ctx context.Context, c Course) error
+	UpdateCourse(ctx context.Context, currency1 string, currency2 string, mean float64) error
 	Close()
 }
 
@@ -37,6 +39,14 @@ type Course struct {
 	Mean	   float64
 }
 
+func (d *DB) GetAllCourses(ctx context.Context) (result []Course, err error) {
+	q := "SELECT id, currency1, currency2, mean FROM course;"
+	if err = d.conn.SelectContext(ctx, &result, q); err != nil {
+		return nil, err
+	}
+	return result, err
+}
+
 func (d *DB) GetCourse(ctx context.Context, currency1 string, currency2 string) (result []Course, err error) {
 	q := "SELECT id, currency1, currency2, mean FROM course WHERE currency1 = $1 and currency2 = $2;"
 	if err = d.conn.SelectContext(ctx, &result, q, currency1, currency2); err != nil {
@@ -46,14 +56,20 @@ func (d *DB) GetCourse(ctx context.Context, currency1 string, currency2 string) 
 }
 
 func (d *DB) CreateCourse(ctx context.Context, c Course) error {
-	q := "INSERT INTO course (cur1, cur2) VALUES ($1, $2);"
+	q := "INSERT INTO course (currency1, currency2) VALUES ($1, $2);"
 	_, err := d.conn.ExecContext(ctx, q, c.Currency1, c.Currency2)
 	return err
 }
 
 func (d *DB) DeleteCourse(ctx context.Context, c Course) error {
-	q := "DELETE FROM course WHERE cur1 = $1 and cur2 = $2;"
+	q := "DELETE FROM course WHERE currency1 = $1 and currency2 = $2;"
 	_, err := d.conn.ExecContext(ctx, q, c.Currency1, c.Currency2)
+	return err
+}
+
+func (d *DB) UpdateCourse(ctx context.Context, currency1 string, currency2 string, mean float64) error {
+	q := "UPDATE course SET mean = $1 WHERE currency1 = $2 and currency2 = $3;"
+	_, err := d.conn.ExecContext(ctx, q, mean, currency1, currency2)
 	return err
 }
 

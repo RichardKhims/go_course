@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"sync"
 
 	"github.com/RichardKhims/go_course/internal/currency_service/config"
 	"github.com/RichardKhims/go_course/internal/currency_service/database"
@@ -21,8 +22,16 @@ func main() {
 	}
 	defer db.Close()
 
-	s := server.New(cfg.Server, db)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	updaterService := server.UpdaterService{
+		Config: cfg.FcsApi,
+		DB:     db,
+	}
+	go updaterService.Run(&wg)
 
+	s := server.New(cfg.Server, db)
 	fmt.Println(db)
 	s.Run()
+	wg.Wait()
 }

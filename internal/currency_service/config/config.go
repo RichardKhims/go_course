@@ -11,6 +11,7 @@ import (
 type Config struct {
 	Server   ServerConfig
 	Database DatabaseConfig
+	FcsApi ApiConfig
 }
 
 // ServerConfig server config
@@ -25,6 +26,7 @@ type DatabaseConfig struct {
 
 type ApiConfig struct {
 	UrlPattern string `toml:"url_pattern"`
+	Period int
 }
 
 // ReadConfig read config from path
