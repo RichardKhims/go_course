@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS student, class;
+DROP TABLE IF EXISTS course, currency;

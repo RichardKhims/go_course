@@ -1,10 +1,7 @@
 package server
 
 import (
-	"errors"
 	"fmt"
-	"strconv"
-
 	"github.com/RichardKhims/go_course/internal/currency_service/config"
 	"github.com/RichardKhims/go_course/internal/currency_service/database"
 	"github.com/gin-gonic/gin"
@@ -34,56 +31,32 @@ func (s *Server) Run() {
 
 func (s *Server) initHandlers() {
 	group := s.router.Group("/api")
-	group.GET("/hello", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"hello": "world",
-		})
-	})
 
-	classGroup := group.Group("/class")
-	classGroup.GET("/list", s.GetClasses)
-	classGroup.POST("/create", func(c *gin.Context) {
-		var input database.Class
+	currencyGroup := group.Group("/currency")
+	currencyGroup.POST("/create", func(c *gin.Context) {
+		var input database.Currency
 		c.ShouldBindJSON(&input)
-		if err := s.db.CreateClass(c.Request.Context(), input); err != nil {
-			c.Error(err)
-		}
-	})
-
-	classGroup.DELETE("/:id", func(c *gin.Context) {
-		classIDint, err := strconv.Atoi(c.Param("id"))
-		if err != nil {
-			c.Error(errors.New("text string"))
-		}
-		if err := s.db.DeleteClass(c.Request.Context(), classIDint); err != nil {
+		if err := s.db.CreateCurrency(c.Request.Context(), input.Symbol, input.Name); err != nil {
 			c.Error(err)
 		}
 		c.Status(200)
 	})
 
-	studentsGroup := group.Group("students")
-	studentsGroup.GET("/list", func(c *gin.Context) {
-		classIDint, err := strconv.Atoi(c.Query("id"))
-		if err != nil {
-			c.Error(errors.New("text string"))
+	currencyGroup.DELETE("/:id", func(c *gin.Context) {
+		if err := s.db.DeleteCurrency(c.Request.Context(), c.Param("id")); err != nil {
+			c.Error(err)
 		}
-		result, err := s.db.GetStudentsByClass(c.Request.Context(), classIDint)
+		c.Status(200)
+	})
+
+	courseGroup := group.Group("course")
+	courseGroup.GET("/", func(c *gin.Context) {
+		var input database.Course
+		c.ShouldBindJSON(&input)
+		course, err := s.db.GetCourse(c.Request.Context(), input.Currency1, input.Currency2)
 		if err != nil {
 			c.Error(err)
 		}
-		c.JSON(200, gin.H{
-			"result": result,
-		})
-	})
-
-	studentsGroup.POST("/create", func(c *gin.Context) {
-		var input database.Student
-		if err := c.ShouldBindJSON(&input); err != nil {
-			c.Status(400)
-		}
-		if err := s.db.CreateStudent(c.Request.Context(), input); err != nil {
-			c.Status(400)
-		}
-		c.Status(200)
+		c.JSON(200, course)
 	})
 }

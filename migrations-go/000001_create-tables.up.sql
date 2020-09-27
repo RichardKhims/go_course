@@ -1,14 +1,12 @@
-CREATE TABLE IF NOT EXISTS class (
+CREATE TABLE IF NOT EXISTS currency (
     id BIGSERIAL PRIMARY KEY,
-    number INT NOT NULL,
-    letter CHAR(1) NOT NULL
+    symbol CHAR(3) UNIQUE NOT NULL,
+    curname VARCHAR(32)
 );
 
-CREATE TABLE IF NOT EXISTS student (
+CREATE TABLE IF NOT EXISTS course (
     id BIGSERIAL PRIMARY KEY,
-    surname TEXT NOT NULL,
-    name TEXT NOT NULL,
-    patronymic TEXT NOT NULL,
-    age INT NOT NULL,
-    class BIGINT REFERENCES class (id)
+    cur1 CHAR(3) NOT NULL,
+    cur2 CHAR(3) NOT NULL,
+    mean DOUBLE NOT NULL
 );

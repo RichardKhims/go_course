@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	cfg, err := config.ReadConfig("/Users/artemarefev/goapi/configs/config.toml")
+	cfg, err := config.ReadConfig("configs/config.toml")
 	if err != nil {
 		panic(err)
 	}
@@ -21,13 +21,6 @@ func main() {
 	}
 	defer db.Close()
 
-	dborm, err := database.NewDBorm(cfg.Database.ConnectionString)
-	if err != nil {
-		panic(err)
-	}
-	defer dborm.Close()
-
-	fmt.Println(dborm)
 	s := server.New(cfg.Server, db)
 
 	fmt.Println(db)
