@@ -23,6 +23,10 @@ type DatabaseConfig struct {
 	ConnectionString string `toml:"connection_string"`
 }
 
+type ApiConfig struct {
+	UrlPattern string `toml:"url_pattern"`
+}
+
 // ReadConfig read config from path
 func ReadConfig(path string) (*Config, error) {
 	var conf Config

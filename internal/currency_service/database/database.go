@@ -9,9 +9,9 @@ import (
 )
 
 type Database interface {
-	GetCourse(ctx context.Context, cur1 string, cur2 string) (result []Course, err error)
-	CreateCurrency(ctx context.Context, currency string, name string) error
-	DeleteCurrency(ctx context.Context, currency string) error
+	GetCourse(ctx context.Context, currency1 string, currency2 string) (result []Course, err error)
+	CreateCourse(ctx context.Context, c Course) error
+	DeleteCourse(ctx context.Context, c Course) error
 	Close()
 }
 
@@ -29,38 +29,31 @@ func New(cfg config.DatabaseConfig) (*DB, error) {
 	}, nil
 }
 
-type Currency struct {
-	tableName struct{} `sql:"currency"`
-	ID        int
-	Symbol	  string
-	Name	  string
-}
-
 type Course struct {
 	tableName  struct{} `sql:"course"`
 	ID         int
 	Currency1  string
 	Currency2  string
-	mean	   float64
+	Mean	   float64
 }
 
-func (d *DB) GetCourse(ctx context.Context, cur1 string, cur2 string) (result []Course, err error) {
-	q := "SELECT id, cur1, cur2, mean FROM course WHERE cur1 = $1 and cur2 = $2;"
-	if err = d.conn.SelectContext(ctx, &result, q, cur1, cur2); err != nil {
+func (d *DB) GetCourse(ctx context.Context, currency1 string, currency2 string) (result []Course, err error) {
+	q := "SELECT id, currency1, currency2, mean FROM course WHERE currency1 = $1 and currency2 = $2;"
+	if err = d.conn.SelectContext(ctx, &result, q, currency1, currency2); err != nil {
 		return nil, err
 	}
 	return result, err
 }
 
-func (d *DB) CreateCurrency(ctx context.Context, currency string, name string) error {
-	q := "INSERT INTO currency (symbol, curname) VALUES ($1, $2);"
-	_, err := d.conn.ExecContext(ctx, q, currency, name)
+func (d *DB) CreateCourse(ctx context.Context, c Course) error {
+	q := "INSERT INTO course (cur1, cur2) VALUES ($1, $2);"
+	_, err := d.conn.ExecContext(ctx, q, c.Currency1, c.Currency2)
 	return err
 }
 
-func (d *DB) DeleteCurrency(ctx context.Context, currency string) error {
-	q := "DELETE FROM currency WHERE symbol = $1;"
-	_, err := d.conn.ExecContext(ctx, q, currency)
+func (d *DB) DeleteCourse(ctx context.Context, c Course) error {
+	q := "DELETE FROM course WHERE cur1 = $1 and cur2 = $2;"
+	_, err := d.conn.ExecContext(ctx, q, c.Currency1, c.Currency2)
 	return err
 }
 

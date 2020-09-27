@@ -14,6 +14,12 @@ type Server struct {
 	db     database.Database
 }
 
+type ConvertRequestDTO struct {
+	CurrencyFrom string
+	CurrencyTo string
+	Value float64
+}
+
 // New create new Server instance
 func New(cfg config.ServerConfig, db database.Database) *Server {
 	return &Server{
@@ -32,31 +38,41 @@ func (s *Server) Run() {
 func (s *Server) initHandlers() {
 	group := s.router.Group("/api")
 
-	currencyGroup := group.Group("/currency")
-	currencyGroup.POST("/create", func(c *gin.Context) {
-		var input database.Currency
-		c.ShouldBindJSON(&input)
-		if err := s.db.CreateCurrency(c.Request.Context(), input.Symbol, input.Name); err != nil {
-			c.Error(err)
-		}
-		c.Status(200)
-	})
-
-	currencyGroup.DELETE("/:id", func(c *gin.Context) {
-		if err := s.db.DeleteCurrency(c.Request.Context(), c.Param("id")); err != nil {
-			c.Error(err)
-		}
-		c.Status(200)
-	})
-
-	courseGroup := group.Group("course")
-	courseGroup.GET("/", func(c *gin.Context) {
+	group.POST("/create", func(c *gin.Context) {
 		var input database.Course
 		c.ShouldBindJSON(&input)
-		course, err := s.db.GetCourse(c.Request.Context(), input.Currency1, input.Currency2)
+		if err := s.db.CreateCourse(c.Request.Context(), input); err != nil {
+			c.Error(err)
+		} else {
+			c.Status(200)
+		}
+
+	})
+
+	group.DELETE("/delete", func(c *gin.Context) {
+		var input database.Course
+		c.ShouldBindJSON(&input)
+		if err := s.db.DeleteCourse(c.Request.Context(), input); err != nil {
+			c.Error(err)
+		} else {
+			c.Status(200)
+		}
+	})
+
+	group.GET("/convert", func(c *gin.Context) {
+		var input ConvertRequestDTO
+		c.ShouldBindJSON(&input)
+		course, err := s.db.GetCourse(c.Request.Context(), input.CurrencyFrom, input.CurrencyTo)
 		if err != nil {
 			c.Error(err)
 		}
-		c.JSON(200, course)
+		if len(course) > 0 {
+			result := input.Value * course[0].Mean
+			c.JSON(200, gin.H{
+				"result": result,
+			})
+		} else {
+			c.String(404, "Pair not found")
+		}
 	})
 }
