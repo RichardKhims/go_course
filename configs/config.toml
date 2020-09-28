@@ -1,0 +1,9 @@
+[server]
+port = 8081
+
+[database]
+connection_string = "postgres://postgres:postgres@localhost:5432/dbcurrency?sslmode=disable"
+
+[fcsapi]
+url_pattern = "https://fcsapi.com/api-v2/forex/latest?symbol=$1/$2&access_key=IIQ8Vz5T4lMoFkObccOLD2kWr1om329AxZXayArZ2UkjM2MedX"
+period = 600
