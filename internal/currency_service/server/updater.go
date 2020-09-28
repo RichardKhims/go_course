@@ -107,7 +107,7 @@ func (updater *UpdaterService) updateCourse (course database.Course, dto FcsApiD
 	if err != nil {
 		return err
 	}
-	err = updater.DB.UpdateCourse(context.Background(), course.Currency1, course.Currency2, price)
+	err = updater.DB.UpdateCourse(context.Background(), course.Currency1, course.Currency2, price, dto.Response[0].LastChanged)
 	if err != nil {
 		return err
 	}

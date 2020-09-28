@@ -13,7 +13,7 @@ type Database interface {
 	GetCourse(ctx context.Context, currency1 string, currency2 string) (result []Course, err error)
 	CreateCourse(ctx context.Context, c Course) error
 	DeleteCourse(ctx context.Context, c Course) error
-	UpdateCourse(ctx context.Context, currency1 string, currency2 string, mean float64) error
+	UpdateCourse(ctx context.Context, currency1 string, currency2 string, mean float64, last_changed string) error
 	Close()
 }
 
@@ -67,9 +67,9 @@ func (d *DB) DeleteCourse(ctx context.Context, c Course) error {
 	return err
 }
 
-func (d *DB) UpdateCourse(ctx context.Context, currency1 string, currency2 string, mean float64) error {
-	q := "UPDATE course SET mean = $1 WHERE currency1 = $2 and currency2 = $3;"
-	_, err := d.conn.ExecContext(ctx, q, mean, currency1, currency2)
+func (d *DB) UpdateCourse(ctx context.Context, currency1 string, currency2 string, mean float64, last_changed string) error {
+	q := "UPDATE course SET mean = $1, last_changed = $2 WHERE currency1 = $3 and currency2 = $4;"
+	_, err := d.conn.ExecContext(ctx, q, mean, last_changed, currency1, currency2)
 	return err
 }
 

@@ -2,5 +2,6 @@ CREATE TABLE IF NOT EXISTS course (
     id BIGSERIAL PRIMARY KEY,
     currency1 CHAR(3) NOT NULL,
     currency2 CHAR(3) NOT NULL,
-    mean DECIMAL DEFAULT 0.0
+    mean DECIMAL NOT NULL DEFAULT 0.0,
+    last_changed TIMESTAMP NOT NULL DEFAULT now()
 );
