@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/RichardKhims/go_course/internal/currency_service/config"
 	"github.com/RichardKhims/go_course/internal/currency_service/database"
 	"io/ioutil"
@@ -42,40 +41,75 @@ func (updater *UpdaterService) Run(wg *sync.WaitGroup) {
 	defer wg.Done()
 	for {
 		courses, err := updater.DB.GetAllCourses(context.Background())
-		fmt.Println(courses)
 		if err != nil {
 			panic("Error reading courses")
 		}
 
-		for _, course := range courses {
-			fmt.Println(course)
-			replacer := strings.NewReplacer("$1", course.Currency1, "$2", course.Currency2)
-			apiUrl := replacer.Replace(updater.Config.UrlPattern)
-			response, err := http.Get(apiUrl)
-			if err != nil {
-				panic("Invalid api url")
-			}
-			body, err := ioutil.ReadAll(response.Body)
-			if err != nil {
-				panic("Invalid response body")
-			}
-			var dto FcsApiDTO
-			err = json.Unmarshal(body, &dto)
-			fmt.Println(dto)
-			if err != nil {
-				panic("Couldn't parse response")
-			}
-			price, err := strconv.ParseFloat(dto.Response[0].Price, 32)
-			fmt.Println(price)
-			if err != nil {
-				panic("Invalid price format")
-			}
-			err = updater.DB.UpdateCourse(context.Background(), course.Currency1, course.Currency2, price)
-			if err != nil {
-				panic("Couldn't update db course")
-			}
+		err = updater.updateCourses(&courses)
+		if err != nil {
+			panic(err)
 		}
 
 		time.Sleep(time.Duration(updater.Config.Period) * time.Second)
 	}
+}
+
+func (updater *UpdaterService) updateCourses (courses *[]database.Course) error {
+	for _, course := range *courses {
+		apiUrl := updater.getApiUrl(course)
+		body, err := updater.sendApiRequest(apiUrl)
+		if err != nil {
+			return err
+		}
+
+		dto, err := updater.unmarshalData(body)
+		if err != nil {
+			return err
+		}
+
+		err = updater.updateCourse(course, dto)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (updater *UpdaterService) getApiUrl(course database.Course) string {
+	replacer := strings.NewReplacer("$1", course.Currency1, "$2", course.Currency2)
+	apiUrl := replacer.Replace(updater.Config.UrlPattern)
+	return apiUrl
+}
+
+func (updater *UpdaterService) sendApiRequest(apiUrl string) (*[]byte, error) {
+	response, err := http.Get(apiUrl)
+	if err != nil {
+		return nil, err
+	}
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+	return &body, nil
+}
+
+func (updater *UpdaterService) unmarshalData (data *[]byte) (dto FcsApiDTO, err error){
+	err = json.Unmarshal(*data, &dto)
+	if err != nil {
+		return FcsApiDTO{}, err
+	}
+	return dto, nil
+}
+
+func (updater *UpdaterService) updateCourse (course database.Course, dto FcsApiDTO) error {
+	price, err := strconv.ParseFloat(dto.Response[0].Price, 32)
+	if err != nil {
+		return err
+	}
+	err = updater.DB.UpdateCourse(context.Background(), course.Currency1, course.Currency2, price)
+	if err != nil {
+		return err
+	}
+	return nil
 }
